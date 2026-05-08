@@ -43,8 +43,8 @@ service cloud.firestore {
       allow update: if (
         // Admin pode dar pontos
         (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points'])) ||
-        // Dono pode mudar nome
-        (isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName']))
+        // Dono pode mudar nome, favoritos ou recentemente jogados
+        (isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'favorites', 'recentlyPlayed']))
       );
 
       // Private data (email)

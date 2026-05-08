@@ -66,6 +66,8 @@ export default function App() {
   const [authModal, setAuthModal] = useState(null); // 'login' | 'signup' | null
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showRanking, setShowRanking] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [recentlyPlayed, setRecentlyPlayed] = useState([]);
   
   // Leaderboard data
   const [leaderboard, setLeaderboard] = useState([]);
@@ -85,7 +87,10 @@ export default function App() {
         const profileRef = doc(db, "users", u.uid);
         const unsubProfile = onSnapshot(profileRef, (snap) => {
           if (snap.exists()) {
-            setUserProfile(snap.data());
+            const data = snap.data();
+            setUserProfile(data);
+            setFavorites(data.favorites || []);
+            setRecentlyPlayed(data.recentlyPlayed || []);
           } else if (u.displayName) {
             // New user from Google or just created, ensure profile exists
             createProfile(u, false);
@@ -166,7 +171,8 @@ export default function App() {
       uid: u.uid,
       displayName: u.displayName || u.email.split('@')[0],
       points: 0,
-      isAdmin: isBecomingAdmin
+      isAdmin: isBecomingAdmin,
+      favorites: []
     };
     const privateData = {
       email: u.email,
@@ -221,18 +227,59 @@ export default function App() {
     }
   };
 
+  const toggleFavorite = async (gameId) => {
+    if (!user) {
+      setAuthModal('login');
+      return;
+    }
+    const newFavorites = favorites.includes(gameId)
+      ? favorites.filter(id => id !== gameId)
+      : [...favorites, gameId];
+    
+    try {
+      const profileRef = doc(db, "users", user.uid);
+      await updateDoc(profileRef, { favorites: newFavorites });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, "users/" + user.uid);
+    }
+  };
+
+  const updateRecentlyPlayed = async (gameId) => {
+    if (!user) return;
+    
+    // Filter out the current game if it exists and add it to the front with new timestamp
+    const filtered = recentlyPlayed.filter(item => item.gameId !== gameId);
+    const newItem = { gameId, lastPlayed: new Date().toISOString() };
+    const newRecentlyPlayed = [newItem, ...filtered].slice(0, 10); // Keep last 10
+    
+    try {
+      const profileRef = doc(db, "users", user.uid);
+      await updateDoc(profileRef, { recentlyPlayed: newRecentlyPlayed });
+    } catch (err) {
+      console.error("Failed to update recently played", err);
+    }
+  };
+
   const categories = useMemo(() => {
-    const cats = ["All", ...new Set(gamesData.map((g) => g.category))];
+    const cats = ["All", "Favorites", "Recently Played", ...new Set(gamesData.map((g) => g.category))];
     return cats;
   }, []);
 
   const filteredGames = useMemo(() => {
+    if (activeCategory === "Recently Played") {
+      return recentlyPlayed
+        .map(item => gamesData.find(g => g.id === item.gameId))
+        .filter(Boolean);
+    }
+
     return gamesData.filter((game) => {
       const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = activeCategory === "All" || game.category === activeCategory;
+      const matchesCategory = 
+        activeCategory === "All" || 
+        (activeCategory === "Favorites" ? favorites.includes(game.id) : game.category === activeCategory);
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, activeCategory]);
+  }, [searchQuery, activeCategory, favorites, recentlyPlayed]);
 
   return (
     <div className="min-h-screen flex flex-col bg-gamer-dark selection:bg-neon-cyan selection:text-gamer-dark overflow-x-hidden">
@@ -253,7 +300,7 @@ export default function App() {
               <Gamepad2 className="text-gamer-dark w-6 h-6" />
             </div>
             <h1 className="text-xl font-display uppercase tracking-wider hidden md:block text-slate-200">
-              Nexus <span className="text-neon-cyan">Unblocked</span>
+              Sesiom <span className="text-neon-cyan">Games</span>
             </h1>
           </div>
 
@@ -434,7 +481,7 @@ export default function App() {
                     BEYOND THE FIREWALL
                   </span>
                   <h2 className="text-3xl sm:text-4xl font-display uppercase leading-none mb-3 sm:mb-4 text-white">
-                    Nexus <span className="text-neon-cyan italic">Prime</span>
+                    Sesiom <span className="text-neon-cyan italic">Games</span>
                   </h2>
                   <p className="text-slate-400 text-[10px] sm:text-sm mb-4 sm:mb-6 leading-relaxed line-clamp-2 sm:line-clamp-none">
                     Fastest unblocked node in the network. Play anywhere, save your progress, 
@@ -494,7 +541,10 @@ export default function App() {
                     className="group"
                   >
                     <div 
-                      onClick={() => setSelectedGame(game)}
+                      onClick={() => {
+                        setSelectedGame(game);
+                        updateRecentlyPlayed(game.id);
+                      }}
                       className="relative aspect-[4/3] sm:aspect-[4/3] rounded-xl overflow-hidden brutal-border bg-slate-900 cursor-pointer mb-2 sm:mb-3"
                     >
                       <img
@@ -553,7 +603,7 @@ export default function App() {
                   className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
                 >
                   <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                  <span className="text-[10px] sm:text-sm font-bold uppercase tracking-wider">Back to Nexus</span>
+                  <span className="text-[10px] sm:text-sm font-bold uppercase tracking-wider">Back to Sesiom</span>
                 </button>
                 <div className="flex items-center gap-2 sm:gap-4">
                    {user && (
@@ -563,10 +613,11 @@ export default function App() {
                      </div>
                    )}
                    <button 
-                    className="p-2 text-slate-400 hover:text-neon-purple transition-colors hidden sm:block"
-                    title="Add to Favorites"
+                    className={`p-2 transition-colors ${favorites.includes(selectedGame.id) ? 'text-red-500' : 'text-slate-400 hover:text-red-500'}`}
+                    title={favorites.includes(selectedGame.id) ? "Remove from Favorites" : "Add to Favorites"}
+                    onClick={() => toggleFavorite(selectedGame.id)}
                    >
-                    <Flame className="w-5 h-5" />
+                    <Flame className={`w-5 h-5 ${favorites.includes(selectedGame.id) ? 'fill-current' : ''}`} />
                    </button>
                    <button 
                     className="p-2 text-slate-400 hover:text-neon-cyan transition-colors"
@@ -631,7 +682,10 @@ export default function App() {
                         {gamesData.filter(g => g.id !== selectedGame.id).slice(0, 3).map((g) => (
                           <div 
                             key={g.id}
-                            onClick={() => setSelectedGame(g)}
+                            onClick={() => {
+                              setSelectedGame(g);
+                              updateRecentlyPlayed(g.id);
+                            }}
                             className="flex items-center gap-3 cursor-pointer group"
                           >
                             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded bg-slate-800 overflow-hidden shrink-0">
@@ -673,7 +727,7 @@ export default function App() {
              >
                 <div className="flex items-center justify-between">
                    <h2 className="text-2xl font-display uppercase text-white">
-                     {authModal === 'login' ? 'Welcome Back' : 'Join the Nexus'}
+                     {authModal === 'login' ? 'Welcome Back' : 'Join Sesiom Games'}
                    </h2>
                    <button onClick={() => setAuthModal(null)} className="p-2 text-slate-500 hover:text-white">
                       <X className="w-5 h-5" />
@@ -700,7 +754,7 @@ export default function App() {
                       type="email" 
                       required
                       className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-neon-cyan transition-colors"
-                      placeholder="player@nexus.net"
+                      placeholder="player@sesiom.net"
                     />
                   </div>
                   <div className="space-y-2">
@@ -761,10 +815,10 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2 opacity-50 grayscale hover:grayscale-0 hover:opacity-100 transition-all">
             <Gamepad2 className="w-5 h-5 text-slate-200" />
-            <span className="text-sm font-display tracking-widest uppercase text-slate-200">Nexus Unblocked</span>
+            <span className="text-sm font-display tracking-widest uppercase text-slate-200">Sesiom Games</span>
           </div>
           <p className="text-slate-600 text-[10px] font-mono uppercase tracking-widest text-center">
-            &copy; 2026 NEXUS CORE SYSTEMS // {user ? `SESSION: ${user.uid.slice(0, 8)}` : 'GUEST MODE'}
+            &copy; 2026 SESIOM GAMES NETWORK // {user ? `SESSION: ${user.uid.slice(0, 8)}` : 'GUEST MODE'}
           </p>
           <div className="flex items-center gap-6">
             <button onClick={() => setShowRanking(true)} className="text-slate-600 hover:text-slate-400 text-[10px] font-mono uppercase">Global Stats</button>

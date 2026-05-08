@@ -10,6 +10,21 @@
         "email": { "type": "string" },
         "points": { "type": "integer" },
         "isAdmin": { "type": "boolean" },
+        "favorites": { 
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "List of favorite game IDs"
+        },
+        "recentlyPlayed": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "gameId": { "type": "string" },
+              "lastPlayed": { "type": "string", "format": "date-time" }
+            }
+          }
+        },
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["uid", "displayName", "email", "points", "isAdmin"]
