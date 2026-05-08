@@ -1,0 +1,37 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User profile with points and admin status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "points": { "type": "integer" },
+        "isAdmin": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "displayName", "email", "points", "isAdmin"]
+    },
+    "AdminRecord": {
+      "title": "Admin Record",
+      "description": "Verification for admin status",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" }
+      },
+      "required": ["uid"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Information about a user"
+    },
+    "/admins/{adminId}": {
+      "schema": "AdminRecord",
+      "description": "Trusted list of admin user IDs"
+    }
+  }
+}

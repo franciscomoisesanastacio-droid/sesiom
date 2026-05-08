@@ -1,0 +1,82 @@
+[
+  {
+    "id": "2048",
+    "title": "2048",
+    "description": "Join the numbers and get to the 2048 tile!",
+    "category": "Puzzle",
+    "url": "https://play2048.co/",
+    "thumbnail": "https://picsum.photos/seed/2048game/400/300"
+  },
+  {
+    "id": "pacman",
+    "title": "Pac-Man",
+    "description": "The legendary arcade classic. Avoid ghosts and eat dots.",
+    "category": "Classic",
+    "url": "https://www.google.com/logos/2010/pacman10-i.html",
+    "thumbnail": "https://picsum.photos/seed/pacman/400/300"
+  },
+  {
+    "id": "tetris",
+    "title": "Tetris",
+    "description": "Arrange falling blocks to clear lines and score points.",
+    "category": "Classic",
+    "url": "https://tetris.com/play-tetris",
+    "thumbnail": "https://picsum.photos/seed/tetris/400/300"
+  },
+  {
+    "id": "hexgl",
+    "title": "HexGL",
+    "description": "Futuristic fast-paced racing game.",
+    "category": "Racing",
+    "url": "http://hexgl.bkcore.com/play/",
+    "thumbnail": "https://picsum.photos/seed/racing/400/300"
+  },
+  {
+    "id": "dino",
+    "title": "Dino Run",
+    "description": "Jump over obstacles and run as far as you can.",
+    "category": "Arcade",
+    "url": "https://chromedino.com/",
+    "thumbnail": "https://picsum.photos/seed/dino/400/300"
+  },
+  {
+    "id": "slope",
+    "title": "Slope",
+    "description": "Roll down the slope for as long as possible without falling off the edge.",
+    "category": "Arcade",
+    "url": "https://slope-game.github.io/",
+    "thumbnail": "https://picsum.photos/seed/slope/400/300"
+  },
+  {
+    "id": "chess",
+    "title": "Chess",
+    "description": "Play the game of kings. Strategic depth at its finest.",
+    "category": "Strategy",
+    "url": "https://poki.com/en/chess",
+    "thumbnail": "https://picsum.photos/seed/chess/400/300"
+  },
+  {
+    "id": "clicker",
+    "title": "Cookie Clicker",
+    "description": "Bake millions of cookies! The original idle game.",
+    "category": "Idle",
+    "url": "https://orteil.dashnet.org/cookieclicker/",
+    "thumbnail": "https://picsum.photos/seed/cookie/400/300"
+  },
+  {
+    "id": "sudoku",
+    "title": "Sudoku",
+    "description": "Daily logic-based number-placement puzzle.",
+    "category": "Puzzle",
+    "url": "https://poki.com/en/g/sudoku",
+    "thumbnail": "https://picsum.photos/seed/sudoku/400/300"
+  },
+  {
+    "id": "bitlife",
+    "title": "BitLife",
+    "description": "Living your life as a simulation. Choices matter.",
+    "category": "Sim",
+    "url": "https://bitlifeonline.io/",
+    "thumbnail": "https://picsum.photos/seed/life/400/300"
+  }
+]

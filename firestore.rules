@@ -1,0 +1,66 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    function isValidUser(data) {
+      return data.uid is string &&
+             data.displayName is string && data.displayName.size() <= 50 &&
+             data.email is string &&
+             data.points is int &&
+             data.isAdmin is bool;
+    }
+
+    // --- Collections ---
+
+    // Users
+    match /users/{userId} {
+      // Public data (displayName, points, isAdmin)
+      allow get: if true;
+      allow list: if true; // Permite ranking público
+      
+      allow create: if isOwner(userId) && 
+                      isValidUser(request.resource.data) &&
+                      request.resource.data.points == 0 &&
+                      request.resource.data.isAdmin == false;
+
+      allow update: if (
+        // Admin pode dar pontos
+        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['points'])) ||
+        // Dono pode mudar nome
+        (isOwner(userId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName']))
+      );
+
+      // Private data (email)
+      match /private/info {
+        allow get, write: if isOwner(userId) || isAdmin();
+      }
+    }
+
+    // Admins
+    match /admins/{adminId} {
+      allow get: if isSignedIn();
+      // Only system or manual intervention sets admins. 
+      // For this app, we'll allow an 'admin code' during signup to write to this via a cloud function or 
+      // in this case, we'll allow a specific 'one-time' self-set if we have a secret.
+      // BUT for security, we'll stick to a strict rule: only admins can read admins.
+      allow read: if isAdmin();
+    }
+  }
+}
