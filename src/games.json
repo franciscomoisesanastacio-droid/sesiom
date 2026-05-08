@@ -78,5 +78,13 @@
     "category": "Sim",
     "url": "https://bitlifeonline.io/",
     "thumbnail": "https://picsum.photos/seed/life/400/300"
+  },
+  {
+    "id": "subway-surfers",
+    "title": "Subway Surfers",
+    "description": "Dash as fast as you can! Dodge the oncoming trains in this official web version of the world-famous endless runner.",
+    "category": "Arcade",
+    "url": "https://poki.com/en/g/subway-surfers",
+    "thumbnail": "https://picsum.photos/seed/subwaysurf/400/300"
   }
 ]

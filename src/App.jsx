@@ -561,10 +561,13 @@ export default function App() {
                            {game.title}
                          </h3>
                       </div>
-                      <div className="absolute inset-0 bg-neon-cyan/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neon-cyan text-gamer-dark flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform">
+                      <div className="absolute inset-0 bg-gamer-dark/90 opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center p-4 text-center backdrop-blur-sm">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-neon-cyan text-gamer-dark flex items-center justify-center shadow-2xl scale-50 group-hover:scale-100 transition-transform mb-3">
                           <Zap className="w-5 h-5 sm:w-6 sm:h-6 fill-current" />
                         </div>
+                        <p className="text-[10px] sm:text-xs text-slate-300 font-medium leading-relaxed line-clamp-4">
+                          {game.description}
+                        </p>
                       </div>
                     </div>
                   </motion.div>
